@@ -1,0 +1,95 @@
+// The "What if…" shelf: real physics, relocated history. Each preset moves a
+// documented event (or a well-characterized near-Earth asteroid) to the place
+// or moment that makes its lesson unmistakable.
+
+import type { HistoricalEvent } from '../types';
+
+export const WHATIFS: HistoricalEvent[] = [
+  {
+    id: 'tunguska-petersburg',
+    name: 'Tunguska, 4h 47m later',
+    when: 'June 30, 1908 — hypothetical',
+    year: 1908,
+    lat: 59.94,
+    lng: 30.31,
+    placeName: 'St. Petersburg, Russia',
+    category: 'whatif',
+    params: { kind: 'impact', diameterM: 55, impactorType: 'stony', velocityKmS: 15, angleDeg: 35, target: 'land', oceanDepthM: 0 },
+    blurb: 'Had the same rock arrived 4 hours 47 minutes later, Earth\'s rotation would have put the imperial capital under the burst point.',
+    facts: [
+      'This is the actual Tunguska object — same size, speed, and angle. Only the clock has moved.',
+      'St. Petersburg in 1908 held ~1.6 million people, the court of Nicholas II, and most of Russia\'s government.',
+      'A 10-megaton airburst over a capital in 1908 would have been history\'s deadliest single day — and no one would have known why.',
+      'Some historians enjoy the counterfactual: no Petersburg, no October Revolution?',
+    ],
+  },
+  {
+    id: 'chelyabinsk-manhattan',
+    name: 'Chelyabinsk over Manhattan',
+    when: 'February 15, 2013 — hypothetical',
+    year: 2013,
+    lat: 40.71,
+    lng: -74.01,
+    placeName: 'New York City, USA',
+    category: 'whatif',
+    params: { kind: 'impact', diameterM: 19, impactorType: 'stony', velocityKmS: 19, angleDeg: 18, target: 'land', oceanDepthM: 0 },
+    blurb: 'The rock nobody saw coming, over the city where everyone is standing at a window.',
+    facts: [
+      'Chelyabinsk\'s 1,500 injuries were almost all from shattered glass. Manhattan is a canyon of glass.',
+      'The burst happens ~30 km up — high enough that buildings stand, low enough that every pane on the island is a projectile.',
+      'It arrived from the direction of the Sun. In 2013, no telescope on Earth could have warned either city.',
+    ],
+  },
+  {
+    id: 'barringer-phoenix',
+    name: 'Meteor Crater over Phoenix',
+    when: '~50,000 years late — hypothetical',
+    year: 2026,
+    lat: 33.45,
+    lng: -112.07,
+    placeName: 'Phoenix, Arizona, USA',
+    category: 'whatif',
+    params: { kind: 'impact', diameterM: 50, impactorType: 'iron', velocityKmS: 13, angleDeg: 45, target: 'land', oceanDepthM: 0 },
+    blurb: 'The Barringer iron, 300 km west and 50 millennia later — downtown instead of empty desert.',
+    facts: [
+      'The same 50 m slug of iron that dug the 1.2 km Arizona crater tourists visit today.',
+      'Iron is the nightmare composition: it holds together through the atmosphere and delivers its energy to the ground.',
+      'Objects this size strike Earth roughly every couple of millennia. Almost all hit ocean or empty land. Almost.',
+    ],
+  },
+  {
+    id: 'chicxulub-atlantic',
+    name: 'Chicxulub, mid-Atlantic',
+    when: '66 million years late — hypothetical',
+    year: 2026,
+    lat: 30.0,
+    lng: -40.0,
+    placeName: 'North Atlantic abyssal plain',
+    category: 'whatif',
+    params: { kind: 'impact', diameterM: 14000, impactorType: 'stony', velocityKmS: 20, angleDeg: 60, target: 'ocean', oceanDepthM: 4500 },
+    blurb: 'The dinosaur killer again — but into 4.5 km of open ocean between two heavily populated coastlines.',
+    facts: [
+      'The deep water changes almost nothing: the impactor is three times wider than the ocean is deep.',
+      'Both Atlantic seaboards — a billion people — face wave run-ups measured in hundreds of meters before the global winter even begins.',
+      'There is no scenario where a 14 km impactor is a regional problem. The ocean just adds a first act.',
+    ],
+  },
+  {
+    id: 'apophis-hit',
+    name: 'Apophis, the miss that wasn\'t',
+    when: 'April 13, 2029 — hypothetical',
+    year: 2029,
+    lat: 48.86,
+    lng: 2.35,
+    placeName: 'Paris, France',
+    category: 'whatif',
+    params: { kind: 'impact', diameterM: 340, impactorType: 'stony', velocityKmS: 12.6, angleDeg: 45, target: 'land', oceanDepthM: 0 },
+    blurb: 'On April 13, 2029, the 340 m asteroid Apophis will really pass closer than our TV satellites. Suppose it didn\'t.',
+    facts: [
+      'The flyby is real and certain: Apophis will be visible to the naked eye from Europe — closer than geostationary orbit.',
+      'When discovered in 2004, early orbits gave it a 2.7% chance of hitting in 2029 — the highest ever recorded for an object its size.',
+      'A 340 m stony asteroid is a country-killer, not a planet-killer: no impact winter, but a crater city and a dead region.',
+      'Radar work has since cleared Earth for at least a century. This preset is the timeline we didn\'t get.',
+    ],
+  },
+];
