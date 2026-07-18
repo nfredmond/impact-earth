@@ -1,31 +1,43 @@
 {
-  "name": "3d-impact",
+  "name": "impact-earth",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "3D asteroid impact & caldera super-eruption simulator with human consequences across 12,500 years",
+  "author": "Nathaniel Redmond <nfredmond@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nfredmond/impact-earth.git"
+  },
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@fontsource/chakra-petch": "^5.2.7",
-    "@fontsource/ibm-plex-mono": "^5.2.7",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "three": "^0.185.1",
-    "zustand": "^5.0.14"
+    "preview": "vite preview",
+    "app:dev": "electron .",
+    "app:build": "npm run build && electron-builder"
   },
   "devDependencies": {
+    "@fontsource/chakra-petch": "^5.2.7",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^6.0.3",
+    "electron": "^43.1.1",
+    "electron-builder": "^26.15.3",
     "oxlint": "^1.71.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "three": "^0.185.1",
     "typescript": "~6.0.2",
     "vite": "^8.1.1",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "zustand": "^5.0.14"
+  },
+  "allowScripts": {
+    "electron@43.1.1": true
   }
 }

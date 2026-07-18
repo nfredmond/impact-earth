@@ -29,3 +29,8 @@ scripts/*.zip
 
 .playwright-mcp/
 /*.png
+
+# desktop build output
+release/
+build/icon.icns
+build/icon.ico

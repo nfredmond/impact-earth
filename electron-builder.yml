@@ -1,0 +1,38 @@
+appId: io.github.nfredmond.impact-earth
+productName: Impact Earth
+artifactName: Impact-Earth-${version}.${ext}
+directories:
+  output: release
+files:
+  - dist/**
+  - electron/**
+  - package.json
+
+linux:
+  target:
+    - deb
+    - AppImage
+  icon: build/icon.png
+  category: Science
+  maintainer: Nathaniel Redmond <nfredmond@gmail.com>
+  synopsis: 3D asteroid impact & supervolcano simulator
+
+win:
+  target: nsis
+  icon: build/icon.png
+
+nsis:
+  oneClick: true
+  deleteAppDataOnUninstall: true
+  artifactName: Impact-Earth-Setup-${version}.${ext}
+
+mac:
+  target:
+    - target: dmg
+      arch: universal
+  icon: build/icon.png
+  category: public.app-category.education
+
+publish:
+  provider: github
+  releaseType: release
