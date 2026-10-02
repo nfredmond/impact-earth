@@ -9,7 +9,11 @@ const executable = process.argv[2] ?? {
 if (!executable) throw new Error('Unsupported desktop platform');
 const env = { ...process.env, SMOKE_OUT: path.resolve('release/desktop-smoke.png') };
 delete env.ELECTRON_RUN_AS_NODE;
-const child = spawn(path.resolve(executable), ['--smoke'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+// Only the headless CI runner opts into software rendering of this local app.
+const args = process.env.IMPACT_SMOKE_SOFTWARE_RENDERING === '1'
+  ? ['--smoke', '--ozone-platform=x11', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']
+  : ['--smoke'];
+const child = spawn(path.resolve(executable), args, { env, stdio: ['ignore', 'pipe', 'pipe'] });
 let passed = false;
 let output = '';
 child.stdout.on('data', data => {

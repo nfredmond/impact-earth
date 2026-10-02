@@ -43,7 +43,9 @@ jobs:
 
       - name: Exercise installed Linux app
         if: runner.os == 'Linux'
-        run: xvfb-run -a node scripts/smoke-desktop.mjs
+        run: dbus-run-session -- xvfb-run -a node scripts/smoke-desktop.mjs
+        env:
+          IMPACT_SMOKE_SOFTWARE_RENDERING: '1'
 
       - name: Exercise native desktop app
         if: runner.os != 'Linux'

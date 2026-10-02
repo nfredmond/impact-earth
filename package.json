@@ -1,7 +1,7 @@
 {
   "name": "impact-earth",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "desktopName": "impact-earth.desktop",
   "description": "3D asteroid impact & caldera super-eruption simulator with human consequences across 12,500 years",
   "author": "Nathaniel Redmond <nfredmond@gmail.com>",
