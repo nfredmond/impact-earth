@@ -26,6 +26,8 @@ function LogSlider(props: {
       </span>
       <input
         type="range"
+        aria-label={label}
+        aria-valuetext={display ? display(value) : `${value} ${unit}`}
         min={0}
         max={1000}
         value={Math.round(t * 1000)}
@@ -53,7 +55,7 @@ function LinSlider(props: {
           {value.toFixed(step < 1 ? 1 : 0)} {unit}
         </b>
       </span>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+      <input type="range" aria-label={label} min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
     </label>
   );
 }
@@ -71,7 +73,7 @@ export function ParamsPanel() {
   const p = scenario.params;
 
   return (
-    <aside className="panel params" aria-label="Scenario parameters">
+    <section className="params" aria-label="Scenario parameters">
       <div className="eyebrow">Scenario console</div>
       <h2 className="params-title">{ev ? ev.name : p.kind === 'impact' ? 'Custom impact' : 'Custom eruption'}</h2>
       <div className="place-row">
@@ -121,7 +123,7 @@ export function ParamsPanel() {
             </div>
           </label>
           {p.target === 'ocean' && (
-            <LinSlider label="Ocean depth" value={p.oceanDepthM} min={200} max={8000} step={100} unit="m" onChange={(v) => setParams({ oceanDepthM: v })} />
+            <LinSlider label="Ocean depth" value={p.oceanDepthM} min={0} max={8000} step={100} unit="m" onChange={(v) => setParams({ oceanDepthM: v })} />
           )}
         </>
       ) : (
@@ -211,6 +213,6 @@ export function ParamsPanel() {
           </div>
         )}
       </div>
-    </aside>
+    </section>
   );
 }

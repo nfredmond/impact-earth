@@ -1,36 +1,49 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { GlobeView } from './scene/GlobeView';
 import { TopBar } from './ui/TopBar';
 import { CatalogPanel } from './ui/CatalogPanel';
-import { ParamsPanel } from './ui/ParamsPanel';
+import { Inspector } from './ui/Inspector';
 import { Dashboard } from './ui/Dashboard';
 import { YearScrubber } from './ui/YearScrubber';
+import { SceneControls } from './ui/SceneControls';
+import { useView } from './state/view';
+import { useStore } from './state/store';
+import { useStory } from './state/story';
+import { StoryExperience, StoryStage } from './ui/StoryExperience';
 
 export default function App() {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const focus = useView((s) => s.focus);
+  const mobilePanel = useView((s) => s.mobilePanel);
+  const storyActive = useStory(s => s.active && !s.exploring);
 
-  // Keep the side panels clear of the bottom stack, whose height changes with
-  // banners, notes, the compare table, and the expandable city list.
-  useEffect(() => {
-    const el = bottomRef.current!;
-    const apply = () =>
-      document.documentElement.style.setProperty('--bottom-h', `${el.offsetHeight}px`);
-    apply();
-    const ro = new ResizeObserver(apply);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  useEffect(() => useStore.subscribe((state, prev) => {
+    if ((state.animationNonce !== prev.animationNonce || (state.placing && !prev.placing)) && window.matchMedia('(max-width: 900px)').matches) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }), []);
 
   return (
-    <div className="app">
-      <GlobeView />
+    <div className={`app${focus ? ' focus-mode' : ''}${storyActive ? ' story-mode' : ''}`} data-mobile-panel={mobilePanel}>
       <TopBar />
+      <main className="scene-stage" aria-label="Interactive Earth">
+        <GlobeView />
+        {storyActive ? <StoryStage /> : <SceneControls />}
+      </main>
+      {storyActive ? <StoryExperience /> : <>
+      <nav className="mobile-nav" aria-label="Simulator panels">
+        {(['catalog', 'params', 'results'] as const).map((panel) => (
+          <button key={panel} aria-pressed={mobilePanel === panel} onClick={() => useView.setState({ mobilePanel: panel })}>
+            {panel === 'catalog' ? 'Explore events' : panel === 'params' ? 'Explore scenario' : 'Consequences'}
+          </button>
+        ))}
+      </nav>
       <CatalogPanel />
-      <ParamsPanel />
-      <div className="bottom-stack" ref={bottomRef}>
+      <Inspector />
+      <div className="bottom-stack">
         <YearScrubber />
         <Dashboard />
       </div>
+      </>}
     </div>
   );
 }

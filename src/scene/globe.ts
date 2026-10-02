@@ -5,6 +5,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { EffectZone } from '../types';
 import { kmToAngle, latLngToVec3, ringBandGeometry, ringLineGeometry, vec3ToLatLng } from './geo';
+import { surfaceRoute } from './observerGeometry';
+import type { ObserverLocation } from '../physics/observer';
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -110,14 +112,22 @@ export class GlobeScene {
   /** Transient FX added by cinematics. */
   readonly fxGroup = new THREE.Group();
   readonly marker: THREE.Group;
+  readonly observerGroup = new THREE.Group();
+  private observerPin: THREE.Mesh | null = null;
 
   private earthUniforms: Record<string, THREE.IUniform>;
   private cloudUniforms: Record<string, THREE.IUniform>;
   private atmoUniforms: Record<string, THREE.IUniform>;
   private raycaster = new THREE.Raycaster();
   private disposed = false;
+  private resizeObserver: ResizeObserver;
+  private dust = 0;
+  private hazeVisible = true;
+  private reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   /** Per-frame tick set by the cinematic driver. */
   onTick: ((dt: number, elapsed: number) => void) | null = null;
+  onViewportResize: (() => void) | null = null;
+  active = true;
 
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -201,18 +211,24 @@ export class GlobeScene {
 
     this.marker = buildMarker();
     this.scene.add(this.marker);
-    this.scene.add(this.ringsGroup, this.scarsGroup, this.fxGroup);
+    this.scene.add(this.ringsGroup, this.scarsGroup, this.fxGroup, this.observerGroup);
 
     const onResize = () => {
       if (this.disposed) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
       if (w === 0 || h === 0) return;
+      const fov = THREE.MathUtils.degToRad(this.camera.fov / 2);
+      const oldView = Math.sin(Math.atan(Math.tan(fov) * Math.min(this.camera.aspect, 1)));
+      const newView = Math.sin(Math.atan(Math.tan(fov) * Math.min(w / h, 1)));
+      this.camera.position.multiplyScalar(oldView / newView).clampLength(this.controls.minDistance, this.controls.maxDistance);
       this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(w, h);
+      this.onViewportResize?.();
     };
-    window.addEventListener('resize', onResize);
+    this.resizeObserver = new ResizeObserver(onResize);
+    this.resizeObserver.observe(container);
 
     let last = performance.now();
     let elapsed = 0;
@@ -220,14 +236,23 @@ export class GlobeScene {
       if (this.disposed) return;
       requestAnimationFrame(animate);
       const now = performance.now();
+      if (!this.active || document.hidden) { last = now; return; }
       const dt = Math.min((now - last) / 1000, 0.1);
       last = now;
       elapsed += dt;
-      this.clouds.rotation.y += dt * 0.004;
-      const pulse = 1 + 0.12 * Math.sin(elapsed * 3.5);
+      if (!this.reducedMotion.matches) this.clouds.rotation.y += dt * 0.004;
+      const pulse = this.reducedMotion.matches ? 1 : 1 + 0.12 * Math.sin(elapsed * 3.5);
       this.marker.children[0]?.scale.setScalar(pulse);
       this.onTick?.(dt, elapsed);
-      this.controls.update();
+      this.controls.update(dt);
+      const markerDistance = this.camera.position.distanceTo(this.marker.position);
+      const markerPixel = 2 * markerDistance * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) / container.clientHeight;
+      this.marker.scale.setScalar(Math.min(1, markerPixel * 7 / .009));
+      if (this.observerPin) {
+        const distance = this.camera.position.distanceTo(this.observerPin.position);
+        const worldPerPixel = 2 * distance * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) / container.clientHeight;
+        this.observerPin.scale.setScalar(worldPerPixel * 6 / .013);
+      }
       this.renderer.render(this.scene, this.camera);
     };
     animate();
@@ -242,17 +267,66 @@ export class GlobeScene {
   }
 
   setDust(amount: number) {
-    this.earthUniforms.dustAmount.value = amount;
-    this.cloudUniforms.dustAmount.value = amount;
+    this.dust = amount;
+    this.earthUniforms.dustAmount.value = this.hazeVisible ? amount : 0;
+    this.cloudUniforms.dustAmount.value = this.hazeVisible ? amount : 0;
   }
   getDust(): number {
-    return this.earthUniforms.dustAmount.value as number;
+    return this.dust;
+  }
+  setHazeVisible(visible: boolean) {
+    this.hazeVisible = visible;
+    this.setDust(this.dust);
   }
 
   setMarker(lat: number, lng: number) {
     const p = latLngToVec3(lat, lng, 1.002);
     this.marker.position.copy(p);
     this.marker.lookAt(p.clone().multiplyScalar(2));
+  }
+
+  setObserver(source: { lat: number; lng: number }, observer: ObserverLocation | null, footprintKm: number | null) {
+    disposeChildren(this.observerGroup);
+    this.observerPin = null;
+    if (!observer) return;
+    const points = surfaceRoute(source, observer).map((point) => point.multiplyScalar(1.002));
+    const route = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: 0x9eeaf0, dashSize: .015, gapSize: .008, transparent: true, opacity: .9 }));
+    route.computeLineDistances();
+    this.observerGroup.add(route);
+    const position = latLngToVec3(observer.lat, observer.lng, 1.002);
+    const pin = new THREE.Mesh(new THREE.RingGeometry(.009, .013, 48), new THREE.MeshBasicMaterial({ color: 0x9eeaf0, side: THREE.DoubleSide, depthWrite: false }));
+    pin.position.copy(position);
+    pin.lookAt(position.clone().multiplyScalar(2));
+    this.observerPin = pin;
+    this.observerGroup.add(pin);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 96;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#0a202cee';
+    ctx.beginPath();
+    ctx.roundRect(2, 2, 636, 92, 16);
+    ctx.fill();
+    ctx.strokeStyle = '#90d9e6';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.font = '500 30px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ddf7ff';
+    const label = observer.name.length > 30 ? `${observer.name.slice(0, 29)}…` : observer.name;
+    ctx.fillText(`◎  ${label}`, 320, 48, 600);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthWrite: false, sizeAttenuation: false }));
+    sprite.position.copy(position);
+    sprite.center.set(.5, -.6);
+    sprite.scale.set(.20, .03, 1);
+    this.observerGroup.add(sprite);
+    if (footprintKm != null) {
+      const line = new THREE.Line(ringLineGeometry(position.clone().normalize(), kmToAngle(footprintKm / 2), .002), new THREE.LineDashedMaterial({ color: 0x9eeaf0, dashSize: .005, gapSize: .003, depthWrite: false }));
+      line.computeLineDistances();
+      this.observerGroup.add(line);
+    }
   }
 
   /** Replace the damage rings for a scenario. */
@@ -315,7 +389,25 @@ export class GlobeScene {
 
   dispose() {
     this.disposed = true;
+    this.resizeObserver.disconnect();
     this.controls.dispose();
+    const textures = new Set<THREE.Texture>();
+    this.scene.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      mesh.geometry?.dispose();
+      const materials = mesh.material ? (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) : [];
+      for (const material of materials) {
+        const map = (material as THREE.MeshBasicMaterial).map;
+        if (map) textures.add(map);
+        if (material instanceof THREE.ShaderMaterial) {
+          Object.values(material.uniforms).forEach(({ value }) => {
+            if (value instanceof THREE.Texture) textures.add(value);
+          });
+        }
+        material.dispose();
+      }
+    });
+    textures.forEach((texture) => texture.dispose());
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
@@ -341,7 +433,9 @@ export function disposeChildren(group: THREE.Group) {
     const mesh = child as THREE.Mesh;
     mesh.geometry?.dispose();
     const mat = mesh.material as THREE.Material | THREE.Material[] | undefined;
-    if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
-    else mat?.dispose();
+    for (const material of mat ? (Array.isArray(mat) ? mat : [mat]) : []) {
+      (material as THREE.MeshBasicMaterial).map?.dispose();
+      material.dispose();
+    }
   }
 }

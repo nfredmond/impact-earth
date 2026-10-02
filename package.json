@@ -1,7 +1,8 @@
 {
   "name": "impact-earth",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "desktopName": "impact-earth.desktop",
   "description": "3D asteroid impact & caldera super-eruption simulator with human consequences across 12,500 years",
   "author": "Nathaniel Redmond <nfredmond@gmail.com>",
   "repository": {
@@ -16,7 +17,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "app:dev": "electron .",
-    "app:build": "npm run build && electron-builder"
+    "app:build": "npm run build && electron-builder",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@fontsource/chakra-petch": "^5.2.7",

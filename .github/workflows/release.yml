@@ -1,5 +1,4 @@
-# Builds desktop installers on native runners and attaches them to the GitHub
-# Release for the pushed tag: .deb + .AppImage (Linux), .dmg (macOS), .exe (Windows).
+# Publish only after all native builds and desktop journeys succeed.
 name: Release desktop apps
 
 on:
@@ -26,13 +25,62 @@ jobs:
 
       - run: npm ci
 
+      - run: npm run lint
+
       - run: npx vitest run
 
       - run: npm run build
 
-      - name: Build and publish installers
-        run: npx electron-builder --publish always
+      - name: Build installers
+        run: npx electron-builder --publish never
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # No Apple signing certificate: ship an ad-hoc-signed build.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Install Linux package
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y ./release/*.deb
+
+      - name: Exercise installed Linux app
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/smoke-desktop.mjs
+
+      - name: Exercise native desktop app
+        if: runner.os != 'Linux'
+        run: node scripts/smoke-desktop.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-smoke-${{ runner.os }}
+          path: release/desktop-smoke.png
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ runner.os }}
+          if-no-files-found: error
+          path: |
+            release/*.deb
+            release/*.AppImage
+            release/*.dmg
+            release/*.exe
+            release/*.blockmap
+            release/latest*.yml
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installers-*
+          merge-multiple: true
+          path: release
+      - name: Publish verified installers
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" release/* --verify-tag --title "Impact Earth $RELEASE_TAG" --notes-file "docs/releases/$RELEASE_TAG.md"

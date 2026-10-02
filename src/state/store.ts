@@ -29,6 +29,7 @@ export interface AppState {
   setPlacing(placing: boolean): void;
   replay(): void;
   newCustom(kind: 'impact' | 'eruption'): void;
+  loadScenario(scenario: Scenario, eventId: string | null, compareYears?: number[]): void;
 }
 
 const first = eventById('chicxulub') ?? EVENTS[0];
@@ -73,6 +74,11 @@ export const useStore = create<AppState>((set, get) => {
     compareImpacts: [],
     animationNonce: 0,
     placing: false,
+
+    loadScenario(input, eventId, compareYears = []) {
+      const scenario = { ...input, params: { ...input.params } };
+      set({ scenario, eventId, compareYears, placing: false, ...recompute({ scenario, grid: get().grid, compareYears }) });
+    },
 
     selectEvent(id) {
       const ev = eventById(id);

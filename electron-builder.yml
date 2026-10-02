@@ -9,6 +9,7 @@ files:
   - package.json
 
 linux:
+  syncDesktopName: true
   target:
     - deb
     - AppImage

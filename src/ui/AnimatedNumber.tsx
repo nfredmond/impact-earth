@@ -8,6 +8,11 @@ export function AnimatedNumber({ value, format }: { value: number; format: (n: n
 
   useEffect(() => {
     target.current = value;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      current.current = value;
+      setDisplay(value);
+      return;
+    }
     let raf: number;
     const tick = () => {
       const c = current.current;

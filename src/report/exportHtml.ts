@@ -5,6 +5,7 @@ import type { HistoricalEvent, HumanImpact, Scenario, SimulationResult } from '.
 import { cities } from '../data/cities';
 import { formatYear } from '../casualties/eras';
 import { fmtCount, fmtEnergy, fmtKm, fmtUsd, sig3 } from '../ui/fmt';
+import { assessObserver, compassPoint, type ObserverLocation } from '../physics/observer';
 
 export interface ReportInput {
   scenario: Scenario;
@@ -12,6 +13,7 @@ export interface ReportInput {
   impact: HumanImpact | null;
   compareImpacts: HumanImpact[];
   event: HistoricalEvent | null;
+  observer?: ObserverLocation | null;
 }
 
 const esc = (s: string) =>
@@ -48,6 +50,14 @@ export function buildReportHtml(input: ReportInput): string {
   const { scenario, result, impact, compareImpacts, event } = input;
   const p = scenario.params;
   const title = event ? event.name : p.kind === 'impact' ? 'Custom impact' : 'Custom eruption';
+  const observation = input.observer ? assessObserver(scenario, result, input.observer) : null;
+  const observerHtml = input.observer && observation ? `<section aria-label="Observation point">
+    <h2>Observation point: ${esc(input.observer.name)}</h2>
+    <p>${input.observer.lat.toFixed(3)}°, ${input.observer.lng.toFixed(3)}°. ${fmtKm(observation.distanceKm)} from ground zero.
+    ${observation.bearing == null ? 'No unique compass bearing.' : `Initial bearing toward ground zero: ${Math.round(observation.bearing)}° ${compassPoint(observation.bearing)}.`}</p>
+    ${observation.zones.length ? `<p>Modeled local zones that include this point:</p><ul>${observation.zones.map((zone) => `<li>${esc(zone.label)} (${fmtKm(zone.radiusKm)} radius)</li>`).join('')}</ul>` : '<p>Outside the modeled local zones. This does not establish safety.</p>'}
+    <p class="note">Distance follows a great circle on a spherical Earth with a 6,371 km radius. City names refer to present-day locations. The view checks overlapping circular footprints; it does not calculate arrival times, terrain shielding, wind direction, or coastal tsunami exposure. Global effects can extend beyond the local zones.</p>
+  </section>` : '';
 
   const paramRows =
     p.kind === 'impact'
@@ -153,6 +163,8 @@ export function buildReportHtml(input: ReportInput): string {
 
   <h2>Damage zones</h2>
   <table><thead><tr><th>Zone</th><th>Radius</th><th>Lethality</th><th>What happens</th></tr></thead><tbody>${zonesRows}</tbody></table>
+
+  ${observerHtml}
 
   <h2>Human consequences${impacts.length > 1 ? ' — across the centuries' : ''}</h2>
   ${humanTable}

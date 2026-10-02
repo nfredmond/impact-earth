@@ -4,8 +4,15 @@
 import { app, BrowserWindow, net, protocol, shell } from 'electron';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { mkdtempSync, promises as fs } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { smokeJourney } from './smoke.js';
 
 const DIST = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist');
+const isSmoke = process.argv.includes('--smoke');
+const smokeProfile = isSmoke ? mkdtempSync(path.join(tmpdir(), 'impact-earth-smoke-')) : null;
+if (smokeProfile) app.setPath('userData', smokeProfile);
+if (isSmoke) setTimeout(() => { console.error('[smoke] timed out'); app.exit(1); }, 45000).unref();
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -35,25 +42,17 @@ async function createWindow() {
     return { action: 'deny' };
   });
 
-  // `--smoke`: load, wait for the scene, screenshot to SMOKE_OUT, exit.
-  // Used by local verification and CI sanity checks.
-  if (process.argv.includes('--smoke')) {
-    setTimeout(async () => {
-      try {
-        const image = await win.webContents.capturePage();
-        const { promises: fs } = await import('node:fs');
-        await fs.writeFile(process.env.SMOKE_OUT ?? 'smoke.png', image.toPNG());
-        console.log('[smoke] ok title=' + win.getTitle());
-      } catch (err) {
-        console.error('[smoke] failed', err);
-        process.exitCode = 1;
-      }
-      app.quit();
-    }, 9000);
-  }
-
   await win.loadURL('app://bundle/');
+  if (isSmoke) {
+    const checks = await win.webContents.executeJavaScript(`(${smokeJourney.toString()})()`);
+    const image = await win.webContents.capturePage();
+    await fs.writeFile(process.env.SMOKE_OUT ?? 'smoke.png', image.toPNG());
+    console.log('[smoke] ok: ' + checks);
+    app.quit();
+  }
 }
+
+function fail(error) { console.error('[desktop] failed', error); app.exit(1); }
 
 app.whenReady().then(() => {
   protocol.handle('app', (request) => {
@@ -63,13 +62,15 @@ app.whenReady().then(() => {
     if (!file.startsWith(DIST)) return new Response('forbidden', { status: 403 });
     return net.fetch(pathToFileURL(file).toString());
   });
-  createWindow();
-});
+  return createWindow();
+}).catch(fail);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (BrowserWindow.getAllWindows().length === 0) createWindow().catch(fail);
 });
+
+app.on('quit', () => { if (smokeProfile) fs.rm(smokeProfile, { recursive: true, force: true }).catch(() => {}); });

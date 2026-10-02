@@ -16,7 +16,23 @@ const DUST_TARGET: Record<string, number> = {
   'mass-extinction': 0.92,
 };
 
+/** Draw current effects without allocating the animated plume and flash. */
+export function showOverview(globe: GlobeScene, scenario: Scenario, result: SimulationResult) {
+  disposeChildren(globe.fxGroup);
+  disposeChildren(globe.scarsGroup);
+  globe.setRingsOpacity(1);
+  globe.setDust((DUST_TARGET[result.global.severity] ?? 0) * 0.55);
+  const center = latLngToVec3(scenario.lat, scenario.lng);
+  if (scenario.params.kind === 'impact' && !result.airburst && result.craterFinalKm) {
+    addScar(globe, center, result.craterFinalKm / 2, 0x1a0f0a);
+  } else if (scenario.params.kind === 'eruption') {
+    const caldera = result.zones.find((z) => z.category === 'caldera');
+    if (caldera) addScar(globe, center, Math.max(caldera.radiusKm, 4), 0x241a12);
+  }
+}
+
 export class Cinematic {
+  get elapsed() { return Math.min(this.t, 8); }
   private t = 0;
   private done = false;
   private bolide: THREE.Mesh | null = null;

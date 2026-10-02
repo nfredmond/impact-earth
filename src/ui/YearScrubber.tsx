@@ -17,7 +17,7 @@ const ANCHORS: [number, number][] = [
   [1.0, 2500],
 ];
 
-export function tToYear(t: number): number {
+function tToYear(t: number): number {
   const x = Math.max(0, Math.min(1, t));
   for (let i = 0; i < ANCHORS.length - 1; i++) {
     const [t0, y0] = ANCHORS[i];
@@ -27,7 +27,7 @@ export function tToYear(t: number): number {
   return 2500;
 }
 
-export function yearToT(year: number): number {
+function yearToT(year: number): number {
   const y = Math.max(-10000, Math.min(2500, year));
   for (let i = 0; i < ANCHORS.length - 1; i++) {
     const [t0, y0] = ANCHORS[i];

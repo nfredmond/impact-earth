@@ -55,6 +55,33 @@ pick the file for your computer:
   human cost change. Click **Pin year** to compare eras side by side.
 - **Export Report** (top right) saves a beautiful standalone web page of your scenario.
 
+## Globe controls
+
+- Search the catalog by event or place, or filter impacts, eruptions, and hypothetical scenarios.
+- Select **Focus** to give the globe the full workspace. Select **Exit focus** or press Escape to restore the panels.
+- Pause, resume, restart, or play the animation at 0.5×, 1×, or 2× speed. The eight-second sequence illustrates the event; it does not represent elapsed physical time.
+- Toggle damage zones, clouds, and dust haze independently. **Auto orbit** rotates the view; **Recenter** returns to the selected location.
+- On phones, switch between **Explore events**, **Explore scenario**, and **Consequences** below the globe.
+- Reduced-motion preferences skip automatic event animation. Replay remains available on request.
+
+## Experience Tunguska
+
+Select **Experience Tunguska** above the event catalog. Five chapters connect the historical account, an atmospheric cutaway, an observer experiment, a material comparison, and a saved field note. Chapters advance on request. Source links distinguish historical accounts from the app's modeled results.
+
+The material experiment holds diameter, speed, entry angle, location, and year fixed. Compare stone, iron, carbon-rich, and comet-like objects. **Pause story and explore** opens the simulator; **Resume story** restores the chapter's choices. **Exit story** restores the scenario you had before starting. At the end, you can keep the experiment as your active scenario instead.
+
+Save up to 12 notes locally through **Save field note**, then reopen them from **Field notes**. **Download note** generates a standalone, printable HTML file containing the saved results, inputs, limitations, and source links. Reopening a note recalculates using the installed model. Notes stay in this browser or desktop profile; clearing its data removes them. See [story methods and verification](docs/tunguska-experience.md).
+
+## Observer mode and scale lab
+
+Select **Watch from your city** on the globe, or open the **Observer** tab. Search the offline catalog of 3,000 cities, enter latitude and longitude, or pick a point on Earth. The observer view shows great-circle distance, the initial compass bearing toward ground zero, and all modeled effect zones containing the selected point. **Go to observer** and **See the route** move the camera. Reports include the selected observation point.
+
+The **Scale lab** compares asteroid diameter or the side of an equivalent cube of erupted material against a 1 km ruler or the [330 m Eiffel Tower](https://www.toureiffel.paris/en/news/history-and-culture/300-330-meters-story-towers-height). Both objects share one linear scale. Open **Scale studio** for a larger diagram, live size controls, and a button that restores the dimensions from when the studio opened.
+
+For surface impacts and eruptions, place a hypothetical crater or caldera outline at the observer location. The dashed cyan outline compares dimensions; it does not move ground zero or change calculated effects. Airbursts have no surface crater overlay.
+
+Observer calculations use the existing circular effect model. They do not resolve arrival times, line of sight, terrain shielding, directional ashfall, or coastal tsunami exposure. Present-day city names remain location references in historical scenarios. See [observer verification notes](docs/observer-mode.md).
+
 ## 🔬 Is it accurate?
 
 The physics uses the peer-reviewed *Earth Impact Effects Program* equations
@@ -78,6 +105,8 @@ npm run app:build  # build installers for your OS
 Stack: Vite + React + TypeScript + Three.js + Zustand, wrapped in Electron for desktop.
 Releases are built by GitHub Actions on native Windows/macOS/Linux runners
 (`.github/workflows/release.yml`). Architecture notes live in [CLAUDE.md](CLAUDE.md).
+
+Release publication waits for lint, tests, builds, and a native desktop journey on all three platforms. Linux checks the installed `.deb`; Windows and macOS check the packaged executable. To run the desktop journey locally after packaging, use `node scripts/smoke-desktop.mjs` (Linux expects the package to be installed). It uses a temporary profile and writes `release/desktop-smoke.png`. Release tags require matching notes in `docs/releases/<tag>.md`.
 
 ## 🙏 Attribution
 
