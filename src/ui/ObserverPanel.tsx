@@ -53,7 +53,7 @@ export function ObserverPanel() {
           useStore.getState().setPlacing(false);
           useView.setState({ pickingObserver: !picking });
           if (window.matchMedia('(max-width: 900px)').matches) window.scrollTo({ top: 0, behavior: 'instant' });
-        }}>{picking ? 'Cancel picking' : 'Pick on globe'}</button>
+        }}>{picking ? 'Cancel picking' : 'Pick on map'}</button>
         <button className="text-button" aria-expanded={coordinatesOpen} onClick={() => setCoordinatesOpen(!coordinatesOpen)}>Coordinates</button>
       </div>
       {coordinatesOpen && <form className="coordinate-form" onSubmit={(e) => {
@@ -70,6 +70,7 @@ export function ObserverPanel() {
       </form>}
       </>}
       {observer && assessment ? <>
+        <button className="btn observer-btn" onClick={() => { useView.setState({ mapMode: 'local', mapCenter: 'observer' }); window.scrollTo({ top: 0, behavior: 'instant' }); }}>Open local observer map</button>
         <div className="observer-readout" aria-live="polite">
           <span className="small-label">Your observation point</span>
           <h3>{observer.name}</h3>

@@ -7,12 +7,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { mkdtempSync, promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { smokeJourney } from './smoke.js';
+import { labJourney } from './lab-smoke.js';
 
 const DIST = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist');
 const isSmoke = process.argv.includes('--smoke');
 const smokeProfile = isSmoke ? mkdtempSync(path.join(tmpdir(), 'impact-earth-smoke-')) : null;
 if (smokeProfile) app.setPath('userData', smokeProfile);
-if (isSmoke) setTimeout(() => { console.error('[smoke] timed out'); app.exit(1); }, 45000).unref();
+if (isSmoke) setTimeout(() => { console.error('[smoke] timed out'); app.exit(1); }, 55000).unref();
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -45,9 +46,10 @@ async function createWindow() {
   await win.loadURL('app://bundle/');
   if (isSmoke) {
     const checks = await win.webContents.executeJavaScript(`(${smokeJourney.toString()})()`);
+    const labChecks = await win.webContents.executeJavaScript(`(${labJourney.toString()})()`);
     const image = await win.webContents.capturePage();
     await fs.writeFile(process.env.SMOKE_OUT ?? 'smoke.png', image.toPNG());
-    console.log('[smoke] ok: ' + checks);
+    console.log('[smoke] ok: ' + checks + '; ' + labChecks);
     app.quit();
   }
 }

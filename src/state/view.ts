@@ -2,6 +2,12 @@ import { create } from 'zustand';
 import type { ObserverLocation } from '../physics/observer';
 
 interface ViewState {
+  mapMode: 'globe' | 'local';
+  mapCenter: 'event' | 'observer' | 'baseline';
+  mapRadius: number;
+  quality: 'standard' | 'low';
+  graphicsError: string | null;
+  graphicsEpoch: number;
   focus: boolean;
   clouds: boolean;
   zones: boolean;
@@ -15,7 +21,7 @@ interface ViewState {
   frameRadiusKm: number | null;
   cameraNonce: number;
   cameraTarget: 'event' | 'observer' | 'route';
-  inspector: 'scenario' | 'observer' | 'scale';
+  inspector: 'scenario' | 'observer' | 'scale' | 'compare' | 'sensitivity';
   mobilePanel: 'catalog' | 'params' | 'results';
   observer: ObserverLocation | null;
   pickingObserver: boolean;
@@ -28,6 +34,7 @@ interface ViewState {
 }
 
 export const useView = create<ViewState>((set) => ({
+  mapMode: 'globe', mapCenter: 'event', mapRadius: 500, quality: 'standard', graphicsError: null, graphicsEpoch: 0,
   focus: false,
   clouds: true,
   zones: true,
@@ -47,8 +54,8 @@ export const useView = create<ViewState>((set) => ({
   pickingObserver: false,
   footprint: false,
   setObserver: (observer) => set((state) => ({ observer, pickingObserver: false, cameraTarget: 'route', cameraNonce: state.cameraNonce + 1, orbit: false })),
-  lookAt: (cameraTarget) => set((state) => ({ cameraTarget, cameraNonce: state.cameraNonce + 1, orbit: false })),
+  lookAt: (cameraTarget) => set((state) => ({ cameraTarget, mapCenter: cameraTarget === 'observer' ? 'observer' : 'event', cameraNonce: state.cameraNonce + 1, orbit: false })),
   toggle: (key) => set((state) => ({ [key]: !state[key] })),
   setSpeed: (speed) => set({ speed }),
-  frameEvent: () => set((state) => ({ cameraTarget: 'event', cameraNonce: state.cameraNonce + 1, orbit: false })),
+  frameEvent: () => set((state) => ({ cameraTarget: 'event', mapCenter: 'event', cameraNonce: state.cameraNonce + 1, orbit: false })),
 }));

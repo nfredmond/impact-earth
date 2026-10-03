@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { GlobeView } from './scene/GlobeView';
+import { SceneSurface } from './ui/SceneSurface';
 import { TopBar } from './ui/TopBar';
 import { CatalogPanel } from './ui/CatalogPanel';
 import { Inspector } from './ui/Inspector';
@@ -15,6 +15,8 @@ export default function App() {
   const focus = useView((s) => s.focus);
   const mobilePanel = useView((s) => s.mobilePanel);
   const storyActive = useStory(s => s.active && !s.exploring);
+  const mapMode = useView(s => s.mapMode);
+  const renderScene = useView(s => s.renderScene);
 
   useEffect(() => useStore.subscribe((state, prev) => {
     if ((state.animationNonce !== prev.animationNonce || (state.placing && !prev.placing)) && window.matchMedia('(max-width: 900px)').matches) {
@@ -26,8 +28,8 @@ export default function App() {
     <div className={`app${focus ? ' focus-mode' : ''}${storyActive ? ' story-mode' : ''}`} data-mobile-panel={mobilePanel}>
       <TopBar />
       <main className="scene-stage" aria-label="Interactive Earth">
-        <GlobeView />
-        {storyActive ? <StoryStage /> : <SceneControls />}
+        <SceneSurface />
+        {storyActive ? (mapMode === 'globe' || !renderScene ? <StoryStage /> : null) : mapMode === 'globe' ? <SceneControls /> : null}
       </main>
       {storyActive ? <StoryExperience /> : <>
       <nav className="mobile-nav" aria-label="Simulator panels">

@@ -8,7 +8,7 @@ export function AnimatedNumber({ value, format }: { value: number; format: (n: n
 
   useEffect(() => {
     target.current = value;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       current.current = value;
       setDisplay(value);
       return;
@@ -23,7 +23,9 @@ export function AnimatedNumber({ value, format }: { value: number; format: (n: n
       if (next !== t) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const visibility = () => { if (document.hidden) { cancelAnimationFrame(raf); current.current = value; setDisplay(value); } };
+    document.addEventListener('visibilitychange', visibility);
+    return () => { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', visibility); };
   }, [value]);
 
   return <span className="num">{format(display)}</span>;

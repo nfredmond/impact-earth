@@ -70,9 +70,15 @@ Select **Experience Tunguska** above the event catalog. Five chapters connect th
 
 The material experiment holds diameter, speed, entry angle, location, and year fixed. Compare stone, iron, carbon-rich, and comet-like objects. **Pause story and explore** opens the simulator; **Resume story** restores the chapter's choices. **Exit story** restores the scenario you had before starting. At the end, you can keep the experiment as your active scenario instead.
 
-Save up to 12 notes locally through **Save field note**, then reopen them from **Field notes**. **Download note** generates a standalone, printable HTML file containing the saved results, inputs, limitations, and source links. Reopening a note recalculates using the installed model. Notes stay in this browser or desktop profile; clearing its data removes them. See [story methods and verification](docs/tunguska-experience.md).
+Save up to 12 notes locally through **Save field note**, then reopen them from **Notebook**, under **Tunguska notes**. **Download note** generates a standalone, printable HTML file containing the saved results, inputs, limitations, and source links. Reopening a note recalculates using the installed model. Notes stay in this browser or desktop profile; clearing its data removes them. See [story methods and verification](docs/tunguska-experience.md).
 
 ## Observer mode and scale lab
+
+**Local map** opens offline regional geography with coastlines, rivers, city labels, distance rings, and modeled effect boundaries. Select a city to set an observer. Change the map center or radius to inspect a location. Geography is generalized and present-day. If 3D fails, this map remains usable; **Retry 3D in low detail** creates a new renderer.
+
+In **Compare**, pin the current scenario, then change an input. The table shows baseline/current values and differences. **View both footprints** shows the current effect boundaries and a dashed baseline outer boundary. **Sensitivity** varies one input around its current value while holding the others fixed. These are sensitivity cases, not confidence intervals.
+
+**Notebook**, under **Saved scenarios**, stores up to 24 impacts or eruptions with their observer and baseline. Export editable JSON files to keep independent copies. Import shows a preview before saving; opening a saved scenario recalculates it using the installed model. See [methods, verification, and the new-user test protocol](docs/experiment-workbench.md).
 
 Select **Watch from your city** on the globe, or open the **Observer** tab. Search the offline catalog of 3,000 cities, enter latitude and longitude, or pick a point on Earth. The observer view shows great-circle distance, the initial compass bearing toward ground zero, and all modeled effect zones containing the selected point. **Go to observer** and **See the route** move the camera. Reports include the selected observation point.
 
@@ -111,6 +117,7 @@ Release publication waits for lint, tests, builds, and a native desktop journey 
 ## 🙏 Attribution
 
 - City data: [SimpleMaps World Cities](https://simplemaps.com/data/world-cities) (CC BY 4.0)
+- Regional coastline and river data: [Natural Earth](https://www.naturalearthdata.com/) (public domain)
 - Earth textures: three-globe example assets (NASA Blue Marble / Black Marble imagery)
 - Impact equations: Collins, Melosh & Marcus (2005), *Meteoritics & Planetary Science* 40:817–840
 

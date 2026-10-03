@@ -3,6 +3,7 @@ import { useStore } from '../state/store';
 import { AnimatedNumber } from './AnimatedNumber';
 import { fmtCount, fmtUsd } from './fmt';
 import { formatYear } from '../casualties/eras';
+import { useView } from '../state/view';
 
 const SEVERITY_LABEL: Record<string, string> = {
   none: 'Regional event',
@@ -32,6 +33,7 @@ export function Dashboard() {
 
   return (
     <div className="dashboard">
+      <button className="text-button assumptions-link" onClick={() => useView.setState({ inspector: 'sensitivity', mobilePanel: 'params', focus: false })}>Model estimates: inspect assumptions and sensitivity</button>
       <div className="stats">
         <div className="stat">
           <span className="stat-label">World population · {formatYear(impact.year)}</span>

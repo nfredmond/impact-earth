@@ -50,7 +50,12 @@ export function GlobeView() {
   // Create scene once.
   useEffect(() => {
     const container = containerRef.current!;
-    const globe = new GlobeScene(container);
+    const globe = new GlobeScene(container, useView.getState().quality === 'low');
+    const lost = (event: Event) => {
+      event.preventDefault();
+      useView.setState({ graphicsError: 'The 3D view lost its graphics connection. Your scenario is still available.', mapMode: 'local' });
+    };
+    globe.renderer.domElement.addEventListener('webglcontextlost', lost);
     sceneRef.current = globe;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -165,6 +170,7 @@ export function GlobeView() {
     return () => {
       unsub();
       unsubView();
+      globe.renderer.domElement.removeEventListener('webglcontextlost', lost);
       globe.controls.removeEventListener('start', onOrbitStart);
       cinematicRef.current?.cancel();
       cinematicRef.current = null;

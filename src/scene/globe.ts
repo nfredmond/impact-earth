@@ -129,9 +129,9 @@ export class GlobeScene {
   onViewportResize: (() => void) | null = null;
   active = true;
 
-  constructor(container: HTMLElement) {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  constructor(container: HTMLElement, lowDetail = false) {
+    this.renderer = new THREE.WebGLRenderer({ antialias: !lowDetail, alpha: false });
+    this.renderer.setPixelRatio(lowDetail ? 1 : Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.1;
