@@ -46,6 +46,9 @@ export async function labJourney() {
   await click('Notebook'); await click('Open scenario');
   await wait(() => document.querySelector('.lab-panel')?.textContent.includes('Baseline outcome: Airburst. Current: Surface impact.'), 'reopen saved baseline');
   await click('View both footprints');
-  await new Promise(r => setTimeout(r, 2000));
+  await wait(() => {
+    const values = [...document.querySelectorAll('.dashboard .stats .num')].map(node => node.textContent);
+    return values[0] === '1.79 B' && values[1] === '76' && values[2] === '4';
+  }, 'dashboard still shows another scenario');
   return 'regional map, fixed baseline, sensitivity, notebook save/export/import/reopen';
 }

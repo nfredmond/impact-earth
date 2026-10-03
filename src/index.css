@@ -973,3 +973,8 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 @media (max-width: 900px) {
  .regional-canvas { bottom: 188px; height: calc(100% - 300px); }
 }
+@media (min-width: 901px) and (max-height: 800px) {
+ .scene-stage:has(.regional-map) { overflow-y: auto; }
+ .regional-map { min-height: 650px; }
+ .regional-canvas { inset: 112px 0 147px; height: calc(100% - 259px); }
+}
